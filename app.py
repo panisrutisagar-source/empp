@@ -1,22 +1,50 @@
-import os
-
 from flask import Flask, request, jsonify
 import pickle
 import numpy as np
 
 app = Flask(__name__)
 
+# Load model & scaler
 model = pickle.load(open("model.pkl", "rb"))
 scaler = pickle.load(open("scaler.pkl", "rb"))
 
+@app.route("/")
+def home():
+    return "API is running"
+
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.json["features"]          # list of 17 numbers
-    scaled = scaler.transform([data])
-    result = model.predict(scaled)[0]
-    label = "WILL LEAVE" if result == 1 else "WILL STAY"
-    return jsonify({"prediction": label})
+    try:
+        data = request.get_json()
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+        values = [
+            data["Age"],
+            data["DistanceFromHome"],
+            data["Education"],
+            data["EnvironmentSatisfaction"],
+            data["JobInvolvement"],
+            data["JobLevel"],
+            data["JobSatisfaction"],
+            data["MonthlyIncome"],
+            data["NumCompaniesWorked"],
+            data["OverTime"],
+            data["PercentSalaryHike"],
+            data["TotalWorkingYears"],
+            data["TrainingTimesLastYear"],
+            data["WorkLifeBalance"],
+            data["YearsAtCompany"],
+            data["YearsSinceLastPromotion"],
+            data["YearsWithCurrManager"]
+        ]
+
+        values = np.array(values).reshape(1, -1)
+        values_scaled = scaler.transform(values)
+
+        prediction = model.predict(values_scaled)[0]
+
+        return jsonify({
+            "prediction": int(prediction)
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
