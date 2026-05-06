@@ -224,7 +224,7 @@ HTML = """
 
 <header>
   <h1>Attrition <span>Predictor</span></h1>
-  <p>Powered by Random Forest · ML Model</p>
+  <p>Developed by Group-8 (CSE 2022-26)</p>
 </header>
 
 <div class="container">
